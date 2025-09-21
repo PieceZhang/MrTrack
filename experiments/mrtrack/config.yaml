@@ -1,0 +1,103 @@
+META_ARC: "mrtrack"
+
+BACKBONE:
+    TYPE: "vit"
+    KWARGS:
+        SEARCH_SIZE: 384
+        TEMPLATE_SIZE: 192
+        STRIDE: 16
+        CAT_MODE: 'direct'
+        RETURN_INTER: False
+        RETURN_STAGES: []
+        SEP_SEG: False
+        PRETRAINED: '../../pretrained_models/ViT-B_16.npz'
+    PRETRAINED: ''  # not used
+    TRAIN_EPOCH: 3
+    LAYERS_LR: 0.1
+
+ADJUST:
+    ADJUST: True
+    TYPE: 'SimpleProj'
+    KWARGS:
+        in_channels: 768
+        out_channels: 256
+
+MOTION:
+    MOTION: False
+    KWARGS:
+        L_range: [1, 3]  # number of frames: random number ranging from L_range
+        Enlarge_factor_range: [2, 17]  # enlarging the length of reg during training
+        Lreg: 10  # length of reg
+
+BAN:
+    BAN: True
+    TYPE: 'TransHead'
+    KWARGS:
+        in_channels: 256
+        enc_num: 0
+        dec_num: 1
+        cls_out_channels: 2
+
+POINT:
+    STRIDE: 8
+
+TRACK:
+    TYPE: 'SiamBANTracker'
+    WINDOW_INFLUENCE: 0.5
+    PENALTY_K: 0.1
+    LR: 0.5
+    EXEMPLAR_SIZE: 192
+    INSTANCE_SIZE: 384
+    BASE_SIZE: 8
+    CONTEXT_AMOUNT: 0.5
+
+TRAIN:
+    EPOCH: 8
+    START_EPOCH: 0 # 0 or resume checkpoint
+    BATCH_SIZE: 12  # real batch size = BATCH_SIZE * NUM_GPUS
+    BASE_LR: 0.005
+    CLS_WEIGHT: 1.0
+    LOC_WEIGHT: 1.0
+    RESUME: '' # '' or 'snapshot/checkpoint.pth'
+    EXEMPLAR_SIZE: 192
+    SEARCH_SIZE: 384
+    OUTPUT_SIZE: 22
+
+    LR:
+        TYPE: 'log'
+        KWARGS:
+            start_lr: 0.005
+            end_lr: 0.00005
+    LR_WARMUP:
+        TYPE: 'step'
+        EPOCH: 2
+        KWARGS:
+            start_lr: 0.001
+            end_lr: 0.005
+            step: 1
+
+DATASET:
+    NAMES:
+    - 'USFM'
+
+    USFM:
+        FRAME_RANGE: 25
+
+    VIDEOS_PER_EPOCH: 400000
+
+    TEMPLATE:
+        SHIFT: 4
+        SCALE: 0.05
+        BLUR: 0.0
+        FLIP: 0.0
+        COLOR: 0.1
+
+    SEARCH:
+        SHIFT: 32
+        SCALE: 0.2
+        BLUR: 0.2
+        FLIP: 0.0
+        COLOR: 0.3
+
+    NEG: 0.25
+    GRAY: 0.0
